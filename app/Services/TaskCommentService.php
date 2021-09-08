@@ -18,6 +18,12 @@ class TaskCommentService extends \App\Providers\AppServiceProvider
      */
     public function all()
     {
+        return $this->taskCommentRepository->all();
+    }
+
+    public function commentsPerTask($key, $data)
+    {
+        return $this->taskCommentRepository->search($key, $data);
     }
 
     /**
@@ -26,6 +32,7 @@ class TaskCommentService extends \App\Providers\AppServiceProvider
      */
     public function create(array $data)
     {
+        return $this->taskCommentRepository->create($data);
     }
 
     /**
@@ -34,6 +41,16 @@ class TaskCommentService extends \App\Providers\AppServiceProvider
      */
     public function find($id)
     {
+        return $this->taskCommentRepository->find($id);
+    }
+
+    /**
+     * @author {Alpha2Chris14}
+     */
+    public function findTaskCommentById($id)
+    {
+        $whereArr = ['id' => $id];
+        return $this->taskCommentRepository->findWhere($whereArr);
     }
 
     /**
@@ -43,6 +60,7 @@ class TaskCommentService extends \App\Providers\AppServiceProvider
      */
     public function update($data, $id)
     {
+        return $this->taskCommentRepository->update($id, $data);
     }
 
     /**
@@ -51,5 +69,6 @@ class TaskCommentService extends \App\Providers\AppServiceProvider
      */
     public function delete($id)
     {
+        return $this->taskCommentRepository->delete($id);
     }
 }

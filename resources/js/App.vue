@@ -6,6 +6,17 @@
 </template>
 <style lang='scss'>
 
+    #view {
+        //width: 95%;
+        margin: 0 auto;
+}
+@media (min-width: 424px) {
+    #view {
+      //  width: 90%;
+    
+    }
+}
+
 </style>
 <script>
     export default {

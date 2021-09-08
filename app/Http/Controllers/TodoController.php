@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\TaskService;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use App\Services\TaskService;
+use App\Http\Resources\TodoResource;
 use Illuminate\Support\Facades\Validator;
 
 class TodoController extends Controller
@@ -75,4 +77,6 @@ class TodoController extends Controller
 
         return response()->json($search, 200);
     }
+
+
 }

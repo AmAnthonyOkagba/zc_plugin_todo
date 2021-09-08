@@ -3,13 +3,15 @@
 namespace App\Repositories\HTTP;
 
 use App\Contracts\RepositoryInterface;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Http;
 
 class HTTPRepository implements RepositoryInterface
 {
     protected $url = 'https://zccore.herokuapp.com/';
     protected $organisation_id = '612a3a914acf115e685df8e3';
-    protected $plugin_id = '61311b9d6e7d00b82b78b80c';
+    protected $plugin_id = '6134a7a42d91654fa0487274';
+
     protected $modelName;
     protected $model;
 
@@ -21,13 +23,12 @@ class HTTPRepository implements RepositoryInterface
 
     public function all()
     {
-        // return Http::get($this->url)->json();
-        return $this->model::get($this->url . 'data/read/' . $this->plugin_id .'/'. $this->modelName . '/' . $this->organisation_id)->json();
+        return $this->model::get($this->url . 'data/read/' . $this->plugin_id . '/' . $this->modelName . '/' . $this->organisation_id)->json()['data'];
     }
 
     public function find($id, $attributes = ['*'])
     {
-        return $this->model::get($this->url . 'data/read/' . $this->plugin_id .'/'. $this->modelName . '/' . $this->organisation_id)->json();
+        return $this->model::get($this->url . 'data/read/' . $this->plugin_id . '/' . $this->modelName . '/' . $this->organisation_id . '?_id=' . $id)->json()['data'][0];
     }
 
     public function findOrFail($id, $attributes = ['*'])
@@ -42,17 +43,17 @@ class HTTPRepository implements RepositoryInterface
 
     public function findBy($attribute, $value, $attributes = ['*'])
     {
-        // TODO: Implement findBy() method.
+        return $this->model::get($this->url . 'data/read/' . $this->plugin_id . '/' . $this->modelName . '/' . $this->organisation_id . '?' . $attribute . '=' . $value)->json()['data'][0];
     }
 
     public function findFirst($attributes = ['*'])
     {
-        // TODO: Implement findFirst() method.
+        return $this->model::get($this->url . 'data/read/' . $this->plugin_id . '/' . $this->modelName . '/' . $this->organisation_id)->json()['data'][0];
     }
 
     public function findAll($attributes = ['*'])
     {
-        // TODO: Implement findAll() method.
+        return $this->model::get($this->url . 'data/read/' . $this->plugin_id . '/' . $this->modelName . '/' . $this->organisation_id)->json()['data'];
     }
 
     public function paginate($perPage = null, $attributes = ['*'], $pageName = 'page', $page = null)
@@ -95,12 +96,12 @@ class HTTPRepository implements RepositoryInterface
             "object_id" => "xxxx",
             "filter" => (object) [],
             "payload" => $attributes
-        ])->json();
+        ])->json()['data'];
     }
 
     public function update($id, array $attributes = [], bool $syncRelations = false)
     {
-        return $this->model::post($this->url . 'data/write', [
+        return $this->model::put($this->url . 'data/write', [
             "plugin_id" => $this->plugin_id,
             "organization_id" => $this->organisation_id,
             "collection_name" => $this->modelName,
@@ -108,7 +109,7 @@ class HTTPRepository implements RepositoryInterface
             "object_id" => $id,
             "filter" => (object) [],
             "payload" => $attributes
-        ])->json();
+        ])->json()['data'];
     }
 
     public function store($id, array $attributes = [], bool $syncRelations = false)
@@ -126,15 +127,15 @@ class HTTPRepository implements RepositoryInterface
 
     public function delete($id)
     {
-        return $this->model::post($this->url . 'data/write', [
+        return $this->model::delete($this->url . 'data/write', [
             "plugin_id" => $this->plugin_id,
             "organization_id" => $this->organisation_id,
             "collection_name" => $this->modelName,
             "bulk_write" => false,
             "object_id" => $id,
             "filter" => (object) [],
-            "payload" =>(object) []
-        ])->json();
+            "payload" => (object) []
+        ])->json()['data'];
     }
 
     public function restore($id)
@@ -142,18 +143,36 @@ class HTTPRepository implements RepositoryInterface
         // TODO: Implement restore() method.
     }
 
+    /**
+     * This will search for a models with a specif key-value pair
+     */
     public function search($key, $data)
     {
-        $todos = $this->all();
+        $objects = $this->all();
         $search_data = [];
-        for($i = 0; $i < count($todos['data']); $i++){
-            if(array_key_exists($key, $todos['data'][$i])){
-                if($todos['data'][$i][$key] == $data){
-                    array_push($search_data, $todos['data'][$i]);
-                }
-            }
+        for ($i = 0; $i < count($objects); $i++) {
 
+            if ($objects[$i][$key] == $data) {
+                array_push($search_data, $objects[$i]);
+            }
         }
         return $search_data;
+    }
+
+
+    /**
+     * This will archive a model
+     */
+    public function archive($id)
+    {
+        $this->update($id, ['archived_at' => now()]);
+    }
+
+    /**
+     * This will unarchive a model
+     */
+    public function unarchive($id)
+    {
+        $this->update($id, ['archived_at' => null]);
     }
 }
